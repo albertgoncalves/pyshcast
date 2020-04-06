@@ -2,9 +2,6 @@
 
 import curses
 
-# http://www.roguebasin.com/index.php?title=FOV_using_recursive_shadowcasting
-# http://www.roguebasin.com/index.php?title=PythonShadowcastingImplementation
-
 WIDTH = 57
 HEIGHT = 16
 LIGHT = [False] * (WIDTH * HEIGHT)
