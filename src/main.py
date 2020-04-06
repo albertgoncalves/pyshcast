@@ -119,16 +119,16 @@ def do_fov(cx, cy):
 
 def do_display(screen, cx, cy):
     for y in range(HEIGHT):
-        y_width = WIDTH * y
+        y_index = WIDTH * y
         for x in range(WIDTH):
             if (x == cx) and (y == cy):
                 character = PLAYER
-            elif LIGHT[y_width + x]:
-                character = MAP[y_width + x]
+            elif LIGHT[y_index + x]:
+                character = MAP[y_index + x]
             else:
                 character = UNSEEN
             screen.addstr(y, x, character)
-            LIGHT[y_width + x] = False
+            LIGHT[y_index + x] = False
     screen.refresh()
 
 
