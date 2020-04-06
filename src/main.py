@@ -24,7 +24,10 @@ MAP = \
     "........................................................."
 
 FOV_RADIUS = max(WIDTH, HEIGHT)
+FOV_RADIUS_FLIP = -FOV_RADIUS
 FOV_RADIUS_SQ = FOV_RADIUS * FOV_RADIUS
+
+K = 0.495
 
 PLAYER = "@"
 UNSEEN = " "
@@ -51,48 +54,44 @@ def get_blocked(x, y):
 def do_cast_light(cx, cy, row, start, end, id_, xx, xy, yx, yy):
     if start < end:
         return
-    for j in range(row, FOV_RADIUS + 1):
-        (dx, dy) = (-j - 1, -j)
+    for dy in range(-row, FOV_RADIUS_FLIP - 1, -1):
         blocked = False
-        while dx <= 0:
-            dx += 1
-            # Translate the `dx, dy` coordinates into map coordinates
-            (X, Y) = (
-                cx + (dx * xx) + (dy * xy),
-                cy + (dx * yx) + (dy * yy)
-            )
-            # `l_slope` and `r_slope` store the slopes of the left and
-            # right extremities of the square we're considering
-            (l_slope, r_slope) = (
-                (dx - 0.5) / (dy + 0.5),
-                (dx + 0.5) / (dy - 0.5)
-            )
+        for dx in range(dy - 1, 1):
+            # NOTE: `l_slope` and `r_slope` store the slopes of the left and
+            # right extremities of the square we're considering.
+            r_slope = (dx + K) / (dy - K)
             if start < r_slope:
                 continue
-            elif l_slope < end:
+            l_slope = (dx - K) / (dy + K)
+            if l_slope < end:
                 break
             else:
-                # Our light beam is touching this square
+                # NOTE: Translate the `(dx, dy)` coordinates into map
+                # coordinates.
+                x = cx + (dx * xx) + (dy * xy)
+                y = cy + (dx * yx) + (dy * yy)
+                # NOTE: Our light beam is touching this square.
                 if ((dx * dx) + (dy * dy)) < FOV_RADIUS_SQ:
-                    if (0 <= X) and (X < WIDTH) and (0 <= Y) \
-                            and (Y < HEIGHT):
-                        LIGHT[(WIDTH * Y) + X] = True
+                    if (0 <= x) and (x < WIDTH) and (0 <= y) \
+                            and (y < HEIGHT):
+                        LIGHT[(WIDTH * y) + x] = True
                 if blocked:
-                    # We're scanning a row of blocked squares
-                    if get_blocked(X, Y):
+                    # NOTE: We're scanning a row of blocked squares.
+                    if get_blocked(x, y):
                         new_start = r_slope
                         continue
                     else:
                         blocked = False
                         start = new_start
                 else:
-                    if get_blocked(X, Y) and (j < FOV_RADIUS):
-                        # This is a blocking square, start a child scan
+                    dy_flip = -dy
+                    if get_blocked(x, y) and (dy_flip < FOV_RADIUS):
+                        # NOTE: This is a blocking square. Start a child scan.
                         blocked = True
                         do_cast_light(
                             cx,
                             cy,
-                            j + 1,
+                            dy_flip + 1,
                             start,
                             l_slope,
                             id_ + 1,
@@ -102,27 +101,27 @@ def do_cast_light(cx, cy, row, start, end, id_, xx, xy, yx, yy):
                             yy,
                         )
                         new_start = r_slope
-        # Row is scanned, do next row unless last square was blocked
+        # NOTE: Row is scanned. Do next row unless last square was blocked.
         if blocked:
             break
 
 
-def do_fov(x, y):
-    do_cast_light(x, y, 1, 1.0, 0.0, 0, 1, 0, 0, 1)
-    do_cast_light(x, y, 1, 1.0, 0.0, 0, 1, 0, 0, -1)
-    do_cast_light(x, y, 1, 1.0, 0.0, 0, -1, 0, 0, 1)
-    do_cast_light(x, y, 1, 1.0, 0.0, 0, -1, 0, 0, -1)
-    do_cast_light(x, y, 1, 1.0, 0.0, 0, 0, 1, 1, 0)
-    do_cast_light(x, y, 1, 1.0, 0.0, 0, 0, 1, -1, 0)
-    do_cast_light(x, y, 1, 1.0, 0.0, 0, 0, -1, 1, 0)
-    do_cast_light(x, y, 1, 1.0, 0.0, 0, 0, -1, -1, 0)
+def do_fov(cx, cy):
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 1, 0, 0, 1)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 1, 0, 0, -1)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, -1, 0, 0, 1)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, -1, 0, 0, -1)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 0, 1, 1, 0)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 0, 1, -1, 0)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 0, -1, 1, 0)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 0, -1, -1, 0)
 
 
-def do_display(screen, X, Y):
+def do_display(screen, cx, cy):
     for y in range(HEIGHT):
         y_width = WIDTH * y
         for x in range(WIDTH):
-            if (x == X) and (y == Y):
+            if (x == cx) and (y == cy):
                 character = PLAYER
             elif LIGHT[y_width + x]:
                 character = MAP[y_width + x]
@@ -139,29 +138,29 @@ def main():
         curses.noecho()
         curses.cbreak()
         screen.keypad(1)
-        (x, y) = (28, 7)
+        (cx, cy) = (28, 7)
         while True:
-            do_fov(x, y)
-            do_display(screen, x, y)
+            do_fov(cx, cy)
+            do_display(screen, cx, cy)
             key = screen.getch()
             if key == LOWER_Q:
                 break
             elif key == UP:
-                move_y = y - 1
-                if (0 <= move_y) and (MAP[(WIDTH * move_y) + x] == FLOOR):
-                    y = move_y
+                move_y = cy - 1
+                if (0 <= move_y) and (MAP[(WIDTH * move_y) + cx] == FLOOR):
+                    cy = move_y
             elif key == DOWN:
-                move_y = y + 1
-                if (move_y < HEIGHT) and (MAP[(WIDTH * move_y) + x] == FLOOR):
-                    y = move_y
+                move_y = cy + 1
+                if (move_y < HEIGHT) and (MAP[(WIDTH * move_y) + cx] == FLOOR):
+                    cy = move_y
             elif key == LEFT:
-                move_x = x - 1
-                if (0 <= move_x) and (MAP[(WIDTH * y) + move_x] == FLOOR):
-                    x = move_x
+                move_x = cx - 1
+                if (0 <= move_x) and (MAP[(WIDTH * cy) + move_x] == FLOOR):
+                    cx = move_x
             elif key == RIGHT:
-                move_x = x + 1
-                if (move_x < WIDTH) and (MAP[(WIDTH * y) + move_x] == FLOOR):
-                    x = move_x
+                move_x = cx + 1
+                if (move_x < WIDTH) and (MAP[(WIDTH * cy) + move_x] == FLOOR):
+                    cx = move_x
     finally:
         screen.keypad(0)
         curses.echo()
