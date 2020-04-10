@@ -54,7 +54,7 @@ def get_blocked(x, y):
 def do_cast_light(cx, cy, row, start, end, xx, xy, yx, yy):
     if start < end:
         return
-    for dy in range(-row, FOV_RADIUS_FLIP - 1, -1):
+    for dy in range(row, FOV_RADIUS_FLIP - 1, -1):
         blocked = False
         for dx in range(dy - 1, 1):
             # NOTE: `l_slope` and `r_slope` store the slopes of the left and
@@ -84,14 +84,13 @@ def do_cast_light(cx, cy, row, start, end, xx, xy, yx, yy):
                         blocked = False
                         start = new_start
                 else:
-                    dy_flip = -dy
-                    if get_blocked(x, y) and (dy_flip < FOV_RADIUS):
+                    if get_blocked(x, y) and (FOV_RADIUS_FLIP < dy):
                         # NOTE: This is a blocking square. Start a child scan.
                         blocked = True
                         do_cast_light(
                             cx,
                             cy,
-                            dy_flip + 1,
+                            dy - 1,
                             start,
                             l_slope,
                             xx,
@@ -106,14 +105,14 @@ def do_cast_light(cx, cy, row, start, end, xx, xy, yx, yy):
 
 
 def do_fov(cx, cy):
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 1, 0, 0, 1)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 1, 0, 0, -1)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, -1, 0, 0, 1)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, -1, 0, 0, -1)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 1, 1, 0)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 1, -1, 0)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, -1, 1, 0)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, -1, -1, 0)
+    do_cast_light(cx, cy, -1, 1.0, 0.0, 1, 0, 0, 1)
+    do_cast_light(cx, cy, -1, 1.0, 0.0, 1, 0, 0, -1)
+    do_cast_light(cx, cy, -1, 1.0, 0.0, -1, 0, 0, 1)
+    do_cast_light(cx, cy, -1, 1.0, 0.0, -1, 0, 0, -1)
+    do_cast_light(cx, cy, -1, 1.0, 0.0, 0, 1, 1, 0)
+    do_cast_light(cx, cy, -1, 1.0, 0.0, 0, 1, -1, 0)
+    do_cast_light(cx, cy, -1, 1.0, 0.0, 0, -1, 1, 0)
+    do_cast_light(cx, cy, -1, 1.0, 0.0, 0, -1, -1, 0)
 
 
 def do_display(screen, cx, cy):
