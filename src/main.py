@@ -51,7 +51,7 @@ def get_blocked(x, y):
     )
 
 
-def do_cast_light(cx, cy, row, start, end, id_, xx, xy, yx, yy):
+def do_cast_light(cx, cy, row, start, end, xx, xy, yx, yy):
     if start < end:
         return
     for dy in range(-row, FOV_RADIUS_FLIP - 1, -1):
@@ -94,7 +94,6 @@ def do_cast_light(cx, cy, row, start, end, id_, xx, xy, yx, yy):
                             dy_flip + 1,
                             start,
                             l_slope,
-                            id_ + 1,
                             xx,
                             xy,
                             yx,
@@ -107,14 +106,14 @@ def do_cast_light(cx, cy, row, start, end, id_, xx, xy, yx, yy):
 
 
 def do_fov(cx, cy):
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 1, 0, 0, 1)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 1, 0, 0, -1)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, -1, 0, 0, 1)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, -1, 0, 0, -1)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 0, 1, 1, 0)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 0, 1, -1, 0)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 0, -1, 1, 0)
-    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 0, -1, -1, 0)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 1, 0, 0, 1)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 1, 0, 0, -1)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, -1, 0, 0, 1)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, -1, 0, 0, -1)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 1, 1, 0)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, 1, -1, 0)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, -1, 1, 0)
+    do_cast_light(cx, cy, 1, 1.0, 0.0, 0, -1, -1, 0)
 
 
 def do_display(screen, cx, cy):
