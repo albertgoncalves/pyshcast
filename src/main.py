@@ -27,7 +27,7 @@ FOV_RADIUS = max(WIDTH, HEIGHT)
 FOV_RADIUS_FLIP = -FOV_RADIUS
 FOV_RADIUS_SQ = FOV_RADIUS * FOV_RADIUS
 
-K = 0.495
+K = 0.5
 
 PLAYER = "@"
 UNSEEN = " "
@@ -56,7 +56,7 @@ def do_cast_light(cx, cy, row, start, end, xx, xy, yx, yy):
         return
     for dy in range(row, FOV_RADIUS_FLIP - 1, -1):
         blocked = False
-        for dx in range(dy - 1, 1):
+        for dx in range(dy, 1):
             # NOTE: `l_slope` and `r_slope` store the slopes of the left and
             # right extremities of the square we're considering.
             r_slope = (dx + K) / (dy - K)
